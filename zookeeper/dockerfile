@@ -1,0 +1,10 @@
+ARG IMAGE
+FROM ${IMAGE}
+
+WORKDIR /kafka-server
+
+ADD kafka/ /kafka-server/
+
+EXPOSE 2181
+
+CMD ["./bin/zookeeper-server-start.sh", "config/zookeeper.properties"]

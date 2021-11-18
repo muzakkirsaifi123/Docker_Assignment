@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  zookeeper:
+    container_name: zookeeper
+    build: 
+      context: .
+      dockerfile: zookeeper/dockerfile
+      args:
+        - IMAGE=openjdk:8-jre-slim
+    ports:
+      - 2181:2181
+    networks:
+      - kafka
+      # - pipes
+
+  server:
+    ports:
+      - 9092:9092
+    container_name: kafka
+    build: 
+      context: .
+      dockerfile: server/dockerfile
+      args:
+        - IMAGE=openjdk:8-jre-slim
+    depends_on:
+      - zookeeper      
+    env_file:
+      - ./envfile
+    networks:
+      - kafka
+      # - pipes
+    volumes:
+      - server_volume:/data
+
+  producer:
+    container_name: producer
+    networks:
+      - kafka
+    build: 
+      context: .
+      dockerfile: producer/dockerfile
+      args:
+        - IMAGE=openjdk:8-jre-slim
+    depends_on:
+      - zookeeper
+      - server
+    volumes:
+      - producer_volume:/data
+
+  consumer:
+    container_name: consumer
+    build: 
+      context: .
+      dockerfile: consumer/dockerfile
+      args:
+        - IMAGE=openjdk:8-jre-slim
+    depends_on:
+      - zookeeper
+      - server
+    networks:
+      - kafka
+    volumes:
+      - consumer_volume:/data
+
+
+networks:
+  kafka:
+  #pipes:
+
+volumes:
+   producer_volume:
+   consumer_volume:
+   server_volume:
